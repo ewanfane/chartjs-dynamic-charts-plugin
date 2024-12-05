@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../src/handler.js"></script>
+    <script src="sample_chart_configs.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <header>
+        <h1>Dynamic Chart Plugin</h1>
+    </header>
+    <div class="container">
+        <!-- Chart Area -->
+        <div class="chart-section" id="chart-area">
+            <div class="chart-container big" id="chart1-div">
+                <canvas id="chart1"></canvas>
+            </div>
+            <div class="chart-container small" id="chart2-div">
+                <canvas id="chart2"></canvas>
+            </div>
+        </div>
+        <!-- Options Area -->
+        <div class="options-section">
+            <h2>Handler Options</h2>
+            <div class="options-form">
+                <label for="handlerType">Handler Type:</label>
+                <select id="handlerType">
+                    <option value="multichart">Multichart</option>
+                    <option value="singlechart">Single Chart</option>
+                </select>
+
+                <label for="start_from">Start From:</label>
+                <select id="start_from">
+                    <option value="end">End</option>
+                    <option value="start">Start</option>
+                </select>
+
+                <label for="can_pan">Can Pan:</label>
+                <select id="can_pan">
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                </select>
+
+                <label for="can_zoom">Can Zoom:</label>
+                <select id="can_zoom">
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                </select>
+
+                <label for="initial_fov">Initial FOV (0-100):</label>
+                <input type="number" id="initial_fov" value="20">
+
+                <label for="min_fov">Min FOV (0-100):</label>
+                <input type="number" id="min_fov" value="10">
+
+                <label for="max_fov">Max FOV (0-100):</label>
+                <input type="number" id="max_fov" value="100">
+
+                <label for="pan_speed_multiplier">Pan Speed Multiplier:</label>
+                <input type="number" id="pan_speed_multiplier" value="1">
+
+                <label for="zoom_factor">Zoom Factor (0-1):</label>
+                <input type="number" id="zoom_factor" value="0.1">
+
+                <label for="fps">FPS Limit:</label>
+                <input type="number" id="fps" value="60">
+
+                <button id="applyOptions">Apply Options</button>
+                <h3>Current Build</h3>
+                <p id="current-build" class="build-box"></p>
+            </div>
+        </div>
+    </div>
+    <div class="space-below"></div>
+    <div class="table-sect">
+        <h2>DynamicChart Attributes</h2>
+        <div class="h-centered">
+            <table>
+                <tr>
+                    <th colspan="3">Attributes</th>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>Type</td>
+                    <td>Description</td>
+                </tr>
+                <tr>
+                    <td>ctx</td>
+                    <td>CanvasRenderingContext2D</td>
+                    <td>The rendering context for the chart, required for drawing on the canvas.</td>
+                </tr>
+                <tr>
+                    <td>data</td>
+                    <td>Array</td>
+                    <td>The dataset used to render the chart. Must be an array.</td>
+                </tr>
+                <tr>
+                    <td>chart_config</td>
+                    <td>Object</td>
+                    <td>Configuration options defining the chart's behavior and appearance.</td>
+                </tr>
+                <tr>
+                    <td>chart_options</td>
+                    <td>Object</td>
+                    <td>Additional options for customizing the chart's functionality.</td>
+                </tr>
+                <tr>
+                    <td>data_length</td>
+                    <td>Number</td>
+                    <td>The length of the dataset. Automatically calculated based on the <code>data</code> array.</td>
+                </tr>
+            </table>
+        </div>
+    
+        <div class="space-below"></div>
+    
+        <div class="h-centered">
+            <table>
+                <tr>
+                    <th colspan="3">chart_options</th>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>Type</td>
+                    <td>Description</td>
+                </tr>
+                <tr>
+                    <td>initial_data_points</td>
+                    <td>Number | null</td>
+                    <td>The initial number of data points to render. Optional.</td>
+                </tr>
+                <tr>
+                    <td>min_data_points</td>
+                    <td>Number | null</td>
+                    <td>The minimum number of data points allowed. Must be greater than 0. Optional.</td>
+                </tr>
+                <tr>
+                    <td>max_data_points</td>
+                    <td>Number | null</td>
+                    <td>The maximum number of data points allowed. Must not exceed the dataset length. Optional.</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="space-below"></div>
+    <div class="table-sect">
+        <h2>DynamicChartHandler Configuration Options</h2>
+        <div class="h-centered">
+            <table>
+                <tr>
+                    <th colspan="3">config</th>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>Type</td>
+                    <td>Description</td>
+                </tr>
+                <tr>
+                    <td>charts</td>
+                    <td>Array&lt;DynamicChart&gt; | null</td>
+                    <td>A collection of DynamicChart instances. Must be an array if provided. Cannot be used with <code>chart</code>.</td>
+                </tr>
+                <tr>
+                    <td>chart</td>
+                    <td>DynamicChart | null</td>
+                    <td>A single DynamicChart instance. Cannot be used with <code>charts</code>.</td>
+                </tr>
+                <tr>
+                    <td>bounding_area</td>
+                    <td>DOM Element</td>
+                    <td>A DOM element with a <code>getBoundingClientRect</code> method, used to define the chart's boundaries. Mandatory if <code>chart</code> or <code>charts</code> is provided.</td>
+                </tr>
+            </table>
+        </div>
+    
+        <div class="space-below"></div>
+    
+        <div class="h-centered">
+            <table>
+                <tr>
+                    <th colspan="3">options</th>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>Type</td>
+                    <td>Description</td>
+                </tr>
+                <tr>
+                    <td>initial_fov</td>
+                    <td>Number</td>
+                    <td>The initial field of view (FOV) for the chart. Must be between <code>min_fov</code> and <code>max_fov</code>.</td>
+                </tr>
+                <tr>
+                    <td>min_fov</td>
+                    <td>Number</td>
+                    <td>The minimum allowable field of view. Must be less than or equal to <code>max_fov</code>.</td>
+                </tr>
+                <tr>
+                    <td>max_fov</td>
+                    <td>Number</td>
+                    <td>The maximum allowable field of view. Must be greater than or equal to <code>min_fov</code>.</td>
+                </tr>
+                <tr>
+                    <td>start_from</td>
+                    <td>String</td>
+                    <td>Determines the starting position of the chart. Valid values are <code>'end'</code> or <code>'start'</code>.</td>
+                </tr>
+                <tr>
+                    <td>can_pan</td>
+                    <td>Boolean</td>
+                    <td>Indicates whether panning is enabled. Default is <code>true</code>.</td>
+                </tr>
+                <tr>
+                    <td>can_zoom</td>
+                    <td>Boolean</td>
+                    <td>Indicates whether zooming is enabled. Default is <code>true</code>.</td>
+                </tr>
+                <tr>
+                    <td>pan_speed_multiplier</td>
+                    <td>Number</td>
+                    <td>Multiplier for adjusting panning speed. Default is <code>1</code>.</td>
+                </tr>
+                <tr>
+                    <td>zoom_factor</td>
+                    <td>Number</td>
+                    <td>The factor by which the chart zooms in or out. Must be between <code>0</code> and <code>1</code>. Default is <code>0.1</code>.</td>
+                </tr>
+                <tr>
+                    <td>fps</td>
+                    <td>Number</td>
+                    <td>The frame rate limit for chart rendering. Default is <code>60</code>.</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        .h-centered {
+            width:100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        header {
+            background-color: #46cb41;
+            color: white;
+            height: 5vh;
+            text-align: center;
+        }
+
+        .space-below {
+            margin: 2rem
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 1vw;
+            height: 85vh;
+        }
+
+        .table-sect {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 1vw;
+        }
+
+        .chart-section {
+            width:50vw;
+            height:100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .options-section {
+            width:35vw;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .options-section h2 {
+            margin-top: 0;
+        }
+
+        .options-form label {
+            display: block;
+            margin-top: 0.5rem;
+        }
+
+        .options-form input, .options-form select, .options-form button {
+            width: 100%;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .options-form button {
+            background-color: #46cb41;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .options-form button:hover {
+            background-color: #45a049;
+        }
+
+        .chart-container {
+            background-color: #0E131F;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container.big {
+            height: 50vh;
+        }
+
+        .chart-container.small {
+            height: 35vh;
+        }
+
+        .build-box {
+            background-color: #eee;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .table-sect {
+            font-family: Arial, sans-serif;
+            margin: 20px auto;
+            width: 90%;
+        }
+        .table-sect h2 {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .table-sect .h-centered {
+            display: flex;
+            justify-content: center;
+        }
+        .table-sect table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .table-sect table, .table-sect th, .table-sect td {
+            border: 1px solid #ccc;
+        }
+        .table-sect th, .table-sect td {
+            padding: 10px;
+            text-align: left;
+        }
+        .table-sect th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+    </style>
+
+    <script>
+          function generateRandomStockData(length, initialValue = 100, volatility = 10, trend = 0.1, randomTrendVolatility = 0.05) {
+            const data = [];
+            let currentValue = initialValue;
+          
+            for (let i = 0; i < length; i++) {
+              const randomChange = Math.random() * volatility * 2 - volatility;
+              const trendChange = trend + (Math.random() * randomTrendVolatility * 2 - randomTrendVolatility);
+              currentValue += randomChange + trendChange;
+              data.push({ x: `${i}`, y: currentValue });
+            }
+          
+            return data;
+          }
+          // Example usage:
+          const randomNumbers1 = generateRandomStockData(1000);
+          const randomNumbers2 = generateRandomStockData(100);
+    </script>
+
+    <script>
+        const bounding_area = document.getElementById("chart-area");
+        const chart1 = new DynamicChart(
+            ctx=document.getElementById('chart1').getContext('2d'),
+            data=randomNumbers1,
+            chart_config=line_config,
+            chart_options={
+                'min_data_points': 100
+            }
+        )
+        const chart2 = new DynamicChart(
+            ctx=document.getElementById('chart2').getContext('2d'),
+            data=randomNumbers2,
+            chart_config=bar_config,
+            chart_options={
+                'min_data_points': 20
+            }
+        )
+
+        const handler_type_select = document.getElementById('handlerType');
+        const start_from_select = document.getElementById('start_from');
+        const can_pan_select = document.getElementById('can_pan');
+        const can_zoom_select = document.getElementById('can_zoom');
+        const initial_fov_input = document.getElementById('initial_fov');
+        const min_fov_input = document.getElementById('min_fov');
+        const max_fov_input = document.getElementById('max_fov');
+        const pan_speed_multiplier_input = document.getElementById('pan_speed_multiplier');
+        const zoom_factor_input = document.getElementById('zoom_factor');
+        const fps_input = document.getElementById('fps');
+        const applyOptionsButton = document.getElementById('applyOptions');
+        const currentBuild = document.getElementById('current-build');
+            
+        const multichart_config={
+            charts: [chart1, chart2],
+            bounding_area:bounding_area
+        };
+
+        const chart1_config={
+            chart: chart1,
+            bounding_area:document.getElementById('chart1-div')
+        };
+
+        const chart2_config={
+            chart: chart2,
+            bounding_area:document.getElementById('chart2-div')
+        };
+
+        
+        let chart_handler = new DynamicChartHandler(multichart_config); 
+        currentBuild.innerText = buildInnerText('chart_handler', 'charts: charts', 'document.getElementById("chart_area")', options=null)
+        let chart1_handler;
+        let chart2_handler;
+
+        function buildInnerText(name, chart, bounding_area, options=null) {
+            if (options) {
+                return `
+                            ${name} = new DynamicChartHandler({
+                                ${chart},
+                                bounding_area: document.getElementById('${bounding_area}')
+                            }, {
+                                start_from: '${options.start_from}',
+                                can_pan: ${options.can_pan},
+                                can_zoom: ${options.can_zoom},
+                                initial_fov: ${options.initial_fov},
+                                min_fov: ${options.min_fov},
+                                max_fov: ${options.max_fov},
+                                pan_speed_multiplier: ${options.pan_speed_multiplier},
+                                zoom_factor: ${options.zoom_factor},
+                                fps: ${options.fps}
+                            });
+                        `;
+            } else {
+                return `
+                            ${name} = new DynamicChartHandler({
+                                ${chart},
+                                bounding_area: document.getElementById('${bounding_area}')
+                            });
+                        `;
+            }
+        }
+
+        applyOptionsButton.addEventListener('click', () => {
+            const options = {
+                start_from: start_from_select.value,
+                can_pan: can_pan_select.value === 'true',
+                can_zoom: can_zoom_select.value === 'true',
+                initial_fov: parseInt(initial_fov_input.value),
+                min_fov: parseInt(min_fov_input.value),
+                max_fov: parseInt(max_fov_input.value),
+                pan_speed_multiplier: parseFloat(pan_speed_multiplier_input.value),
+                zoom_factor: parseFloat(zoom_factor_input.value),
+                fps: parseInt(fps_input.value)
+            };
+
+            
+            if (handler_type_select.value === 'singlechart') {
+                if (chart_handler){
+                    chart_handler.destroy();
+                    chart_handler = null;
+                }
+                if (!chart1_handler) {
+                    chart1_handler = new DynamicChartHandler(chart1_config, options); 
+                    chart2_handler = new DynamicChartHandler(chart2_config, options); 
+                } else {
+                    chart1_handler.update_options(options); 
+                    chart2_handler.update_options(options); 
+                }
+                currentBuild.innerText = `${buildInnerText('chart1_handler', 'chart: chart1', 'document.getElementById("chart1-div")', options)}
+                                            ${buildInnerText('chart2_handler', 'chart: chart2', 'document.getElementById("chart2-div")', options)}`
+            } else {
+                if (chart1_handler) {
+                    chart1_handler.destroy(); 
+                    chart2_handler.destroy(); 
+                }
+                if (!chart_handler) {
+                    chart_handler = new DynamicChartHandler(multichart_config, options); 
+                } else {
+                    chart_handler.update_options(options);
+                }
+                currentBuild.innerText = buildInnerText('chart_handler', 'charts: charts', 'document.getElementById("chart_area")', options)
+            }
+        });
+    </script>
+</body>
+</html>
