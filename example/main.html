@@ -388,7 +388,7 @@
     </style>
 
     <script>
-          function generateRandomStockData(length, initialValue = 100, volatility = 10, trend = 0.1, randomTrendVolatility = 0.05) {
+          function generateRandomData(length, initialValue = 100, volatility = 10, trend = 0.1, randomTrendVolatility = 0.05) {
             const data = [];
             let currentValue = initialValue;
           
@@ -401,29 +401,60 @@
           
             return data;
           }
-          // Example usage:
-          const randomNumbers1 = generateRandomStockData(1000);
-          const randomNumbers2 = generateRandomStockData(100);
+
+
+          function create_line_dataset(label, data, color) {
+            return {
+                label: label,
+                data: data,
+                backgroundColor: color,
+                type: 'line',
+                borderColor: color,
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.05
+            }
+          }
+
+          function create_bar_dataset(label, data, color) {
+            return {
+                label: label,
+                data: data,
+                backgroundColor: color,
+                borderWidth: 1,
+                barThickness: 'flex', 
+                categoryPercentage: 1.0,
+                barPercentage: 0.9,
+            }
+          }
     </script>
 
     <script>
         const bounding_area = document.getElementById("chart-area");
-        const chart1 = new DynamicChart(
-            ctx=document.getElementById('chart1').getContext('2d'),
-            data=randomNumbers1,
-            chart_config=line_config,
-            chart_options={
-                'min_data_points': 100
-            }
-        )
-        const chart2 = new DynamicChart(
-            ctx=document.getElementById('chart2').getContext('2d'),
-            data=randomNumbers2,
-            chart_config=bar_config,
-            chart_options={
-                'min_data_points': 20
-            }
-        )
+        const randomNumbers1 = generateRandomData(1000);
+        const randomNumbers2 = generateRandomData(1000);
+        const randomNumbers3 = generateRandomData(100);
+
+        const dataset1 = create_line_dataset('dataset1', randomNumbers1, colors.fadegreen)
+        const dataset2 = create_line_dataset('dataset1', randomNumbers2, colors.fadered)
+        const dataset3 = create_bar_dataset('dataset2', randomNumbers3, colors.fadegreen)
+
+        const chart1 = new DynamicChart({
+            ctx: document.getElementById('chart1').getContext('2d'),
+            datasets: [dataset1, dataset2],
+            chart_config: line_config,
+          }, {
+            'min_data_points': 20,
+          });
+
+
+          const chart2 = new DynamicChart({
+            ctx: document.getElementById('chart2').getContext('2d'),
+            dataset: dataset3,
+            chart_config: bar_config,
+          }, {
+            'min_data_points': 20
+          });
 
         const handler_type_select = document.getElementById('handlerType');
         const start_from_select = document.getElementById('start_from');

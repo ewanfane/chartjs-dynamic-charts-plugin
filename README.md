@@ -9,6 +9,7 @@ DynamicCharts is a customizable plugin for creating interactive, dynamic charts.
 - **Customizable Field of View (FOV):** Adjust the FOV for better data visibility and presentation.
 - **FPS Control:** Set a frame rate limit to optimize performance.
 - **Chart Configuration Options:** Extensive configuration options for customizing chart behaviors.
+- **Custom Functionality:**  Enables users to modify chart properties or behavior dynamically based on updates to the charts FOV.
 
 ## Installation
 
@@ -41,68 +42,89 @@ DynamicCharts is a customizable plugin for creating interactive, dynamic charts.
    Create a DynamicChart instance:
 
    ```js
-   var chart = new DynamicChart({
-    ctx: document.getElementById('chart').getContext('2d'),
-    data: data,
-    chart_config: chartjs_chart_config_function,
-    chart_options: options
-    });
+   const chart1 = new DynamicChart(config={
+      ctx: document.getElementById('chart1').getContext('2d'),
+      datasets: [dataset1, dataset2],
+      chart_config: line_config,
+      }, 
+      options={
+
+      }
+   )
    ```
 
 5. **Initialise DynamicChartHandler:**
 
-   Create a DynamicChartHandler instance and pass the DynamicChart and a bounding area (this can be as simple as a div wrapping the canvas/s with an id)
+   Create a DynamicChartHandler instance and pass the config with the DynamicChart and a bounding area (this can be as simple as a div wrapping the canvas/s with an id)
 
    ```js
-   const bounding_area = document.getElementById("chart-area");
-   const chart_config={
-            chart: chart,
-            bounding_area:document.getElementById('chart-div')
-        };
-   let chart_handler = new DynamicChartHandler(chart_config);
+   let chart_handler = new DynamicChartHandler(config={
+         chart: chart,
+         bounding_area:document.getElementById('chart-div')
+      },
+      options={
+
+      }
+   );
    ```
 
 
 ## DynamicChart Attributes
 
-| Name               | Type                        | Description                                                           |
-|--------------------|-----------------------------|-----------------------------------------------------------------------|
-| `ctx`              | `CanvasRenderingContext2D`   | The rendering context for the chart, required for drawing on the canvas. |
-| `data`             | `Array`                     | The dataset used to render the chart. Must be an array.                |
-| `chart_config`     | `Object`                    | Configuration options defining the chart's behavior and appearance.    |
-| `chart_options`    | `Object`                    | Additional options for customizing the chart's functionality.          |
-| `data_length`      | `Number`                    | The length of the dataset, automatically calculated based on the data array. |
+| Name               | Type                        | Description                              |
+|--------------------|-----------------------------|------------------------------------------|
+| `config`     | `Object`                    | The mandatory settings for DynamicChart        |
+| `options`    | `Object`                    | The optional settings for DynamicChartHandler  |
 
-## Chart Options
+## DynamicChart config
 
-| Name               | Type    | Description                                      |
-|--------------------|---------|--------------------------------------------------|
-| `initial_data_points` | `Number` | `null`                                           |
-| `min_data_points`    | `Number` | `null`                                           |
-| `max_data_points`    | `Number` | `null`                                           |
+| Name               | Type                        | Description                                                              |
+|--------------------|-----------------------------|--------------------------------------------------------------------------|
+| `ctx`              | `CanvasRenderingContext2D`  | The rendering context for the chart, required for drawing on the canvas. |
+| `datasets`         | `Array`                     | The array of datasets used to render the chart.                          |
+| `chart_config`     | `Object`                    | Configuration options defining the chart's behavior and appearance.      |
 
-## DynamicChartHandler Configuration Options
+
+
+## DynamicChart options
+
+| Name               | Type    | Description                                                                                             |
+|--------------------|---------|---------------------------------------------------------------------------------------------------------|
+| `min_data_points`    | `Number` | The minimum number of data points that can be displayed on the chart                                 |
+| `max_data_points`    | `Number` | The maximum number of data points that can be displayed on the chart                                 |
+| `function`            | `function` | A custom function to dynamically modify chart datasets or behavior must return `chart, datasets`. |
+
+
+## DynamicChartHandler
 
 | Name               | Type                     | Description                                                   |
 |--------------------|--------------------------|---------------------------------------------------------------|
-| `charts`           | `Array<DynamicChart>`     | `null`                                                        |
-| `chart`            | `DynamicChart`            | `null`                                                        |
+| `config`           | `Object`                 | The mandatory settings for DynamicChartHandler                |
+| `options`          | `DynamicChart`           | The optional settings for DynamicChartHandler                 |
+
+
+## DynamicChartHandler config
+
+| Name               | Type                     | Description                                                                                  |
+|--------------------|--------------------------|----------------------------------------------------------------------------------------------|
+| `charts`           | `Array<DynamicChart>`     | An array of DynamicChart instances cannot, be used with chart                               |
+| `chart`            | `DynamicChart`            | A DynamicChart instance, cannot be used with charts                                         |
 | `bounding_area`    | `DOM Element`             | A DOM element with a `getBoundingClientRect` method, used to define the chart's boundaries. |
 
-## Handler Options
+## DynamicChartHandler options
 
-| Name                   | Type     | Description                                      |
-|------------------------|----------|--------------------------------------------------|
-| `handlerType`          | `String` | Choose between "multichart" and "singlechart".   |
+| Name                   | Type     | Description                                                      |
+|------------------------|----------|------------------------------------------------------------------|
+| `handlerType`          | `String` | Choose between "multichart" and "singlechart".                   |
 | `start_from`           | `String` | Determines where to start the chart data from: "start" or "end". |
-| `can_pan`              | `Boolean`| Enable or disable panning functionality.         |
-| `can_zoom`             | `Boolean`| Enable or disable zoom functionality.            |
-| `initial_fov`          | `Number` | Set the initial field of view (FOV) for the chart. |
-| `min_fov`              | `Number` | Set the minimum allowable FOV.                   |
-| `max_fov`              | `Number` | Set the maximum allowable FOV.                   |
-| `pan_speed_multiplier` | `Number` | Adjust the speed of panning.                     |
-| `zoom_factor`          | `Number` | Set the zoom factor for zooming functionality.   |
-| `fps`                  | `Number` | Set the FPS limit for chart rendering.           |
+| `can_pan`              | `Boolean`| Enable or disable panning functionality.                         |
+| `can_zoom`             | `Boolean`| Enable or disable zoom functionality.                            |
+| `initial_fov`          | `Number` | Set the initial field of view (FOV) for the chart.               |
+| `min_fov`              | `Number` | Set the minimum allowable FOV.                                   |
+| `max_fov`              | `Number` | Set the maximum allowable FOV.                                   |
+| `pan_speed_multiplier` | `Number` | Adjust the speed of panning.                                     |
+| `zoom_factor`          | `Number` | Set the zoom factor for zooming functionality.                   |
+| `fps`                  | `Number` | Set the FPS limit for chart rendering.                           |
 
    
 

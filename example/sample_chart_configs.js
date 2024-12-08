@@ -1,27 +1,17 @@
 const colors = {
     'fadegreen': 'rgba(70, 203, 65, 0.8)',
+    'fadered': 'rgba(255, 99, 132, 0.8)',
     'ticks': '#ffffff',
     'grid': 'rgba(255, 255, 255, 0.2)'
 }
 
 
-function line_config(chart_data) {
+function line_config(datasets, options) {
 
     return {
         type: 'line',
         data: {
-            datasets: [
-                {
-                    label: 'RSI',
-                    data: chart_data,
-                    backgroundColor: colors.fadegreen,
-                    type: 'line',
-                    borderColor: colors.fadegreen,
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    tension: 0.05
-                },
-            ]
+            datasets: datasets
         },
         options: {
             animations: false,
@@ -66,22 +56,12 @@ function line_config(chart_data) {
 }
 
 
-function bar_config(chart_data) {
+function bar_config(datasets, options) {
 
     return {
         type: 'bar',
         data: {
-            datasets: [
-                {
-                    label: 'Sample',
-                    data: chart_data,
-                    backgroundColor: colors.fadegreen,
-                    borderWidth: 1,
-                    barThickness: 'flex', // Dynamically adjust bar thickness
-                    categoryPercentage: 1.0, // Ensure the bars use the full category width
-                    barPercentage: 0.9, // Adjust how much of the category width each bar occupies
-                },
-            ],
+            datasets: datasets
         },
         options: {
             animations: false,

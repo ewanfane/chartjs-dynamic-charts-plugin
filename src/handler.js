@@ -1,32 +1,70 @@
 class DynamicChart {
-    constructor(ctx=null, data=null, chart_config=null, chart_options={}) {
-        this.ctx = ctx;
-        this.data = data;
-        this.chart_config = chart_config;
-        this.chart_options = chart_options;
-        this.data_length = data.length;
-
-        this.initial_data_points = chart_options.initial_data_points || null;
-        this.min_data_points = chart_options.min_data_points || null;
-        this.max_data_points = chart_options.max_data_points || null;
-        this.validateConstructor();
+    constructor(config = {}, options = {}) {
+      this.ctx = config.ctx || null;
+      this.datasets = config.datasets || null;
+      this.dataset = config.dataset || null; // Can be removed if only `datasets` are allowed
+      this.chart_config = config.chart_config || null;
+  
+      this.options = options;
+      this.max_data_length = 0;
+  
+      this.min_data_points = options.min_data_points || null;
+      this.max_data_points = options.max_data_points || null;
+      this.function = options.function || null;
+  
+      this.validateConstructor();
+      this.init();
+      this.get_dataLength();
     }
-
+  
+    init() {
+      // If both dataset and datasets are provided, throw an error
+      if (this.dataset && this.datasets) {
+        throw new Error('Cannot have both "data" and "datasets" properties in the config.');
+      }
+  
+      // If only "dataset" is provided, convert it to an array within datasets
+      if (this.dataset) {
+        this.datasets = [this.dataset];
+        this.dataset = null; // Clear the "dataset" property after conversion
+      }
+    }
+  
     validateConstructor() {
-        if (!this.ctx || !this.data || !this.chart_config) {
-          throw new Error('Missing mandatory arguments. ctx, data, and chart_config are required for DynamicChart.');
-        }
-      
-        if (!Array.isArray(this.data)) {
-          throw new TypeError('data argument must be an array.');
-        }
-
-        if (this.min_data_points < 1) {
-          throw new RangeError('min_data_points must be greater than 0');
-        }
-        if (this.max_data_points > this.data_length) {
-          throw new RangeError('max_data_points must not exceed the length of the dataset');
-        }
+      if (!this.ctx) {
+        throw new Error('Missing mandatory config argument: "ctx"');
+      }
+  
+      if (!this.datasets && !this.dataset) { // Allow only one of "datasets" or "dataset"
+        throw new Error('Missing mandatory config argument: "data" or "datasets"');
+      }
+  
+      if (!this.chart_config) {
+        throw new Error('Missing mandatory config argument: "chart_config"');
+      }
+  
+      if (this.datasets) {
+        this.datasets.forEach(dataset => {
+          if (!Array.isArray(dataset.data)) {
+            throw new TypeError('The "data" property in each dataset must be an array.');
+          }
+        });
+      }
+  
+      if (this.min_data_points < 1) {
+        throw new RangeError('The "min_data_points" option must be greater than 0.');
+      }
+  
+      if (this.max_data_points !== undefined && // Check if defined before comparison
+          this.max_data_points > this.dataLength) { // Use dataLength instead of data_length (assuming a getter)
+        throw new RangeError('The "max_data_points" option must not exceed the length of the dataset.');
+      }
+    }
+  
+    get_dataLength() {
+      if (this.datasets) {
+        this.max_data_length = Math.max(...this.datasets.map(dataset => dataset.data.length));
+      }
     }
 }
 
@@ -167,26 +205,25 @@ class DynamicChartHandler {
 
     drawChart() {
         this.charts.forEach(chart => {
-            const data_range = this.calculateVisibleRange(chart);
-            if (!chart.chart) {
-                
-                chart.chart = new Chart(chart.ctx, chart.chart_config(chart.data.slice(...data_range)));
-            } else {
-                
-                const newData = chart.data.slice(...data_range);
+          let updatedDatasets = chart.datasets.map(dataset => {
+            const slicedData = this.calculateVisibleRange(chart, dataset);
+            return { ...dataset, data: slicedData }; // Create new dataset with sliced data
+          });
 
-                if (newData.length > 0) {
-                    chart.chart.data.datasets.forEach((dataset) => {
-                        dataset.data = newData; 
-                    });
+          if (chart.function) {
+                chart, updatedDatasets = chart.function(chart, updatedDatasets)
+          }
 
-                    chart.chart.update('none'); 
-                } else {
-                    console.warn("No data in the specified range to display.");
-                }
-            }
+          if (!chart.chart) {
+            // Initialize chart if it doesn't exist yet
+            chart.chart = new Chart(chart.ctx, chart.chart_config(updatedDatasets));
+          } else {
+            // Update existing chart datasets
+            chart.chart.data.datasets = updatedDatasets;
+            chart.chart.update('none');
+          }
         });
-    }
+      }
 
     handlePanning(panStep) {
         if (this.can_pan) {
@@ -241,29 +278,29 @@ class DynamicChartHandler {
         };
     }
 
-    calculateVisibleRange(chart) {
+    calculateVisibleRange(chart, dataset) {
         let start;
         let end;
         const clampedStart = Math.max(0, Math.min(100, this.visible_range.start));
         const clampedEnd = Math.max(0, Math.min(100, this.visible_range.end));
 
-        start = Math.round(chart.data_length * (clampedStart / 100));
-        end = Math.round(chart.data_length * (clampedEnd / 100));
+        start = Math.round(dataset.data.length * (clampedStart / 100));
+        end = Math.round(dataset.data.length * (clampedEnd / 100));
 
-        if (chart.min_fov) {
-            if (end - start < chart.min_fov) {
-                start = end - chart.min_fov;
+        if (chart.min_data_points) {
+            if (end - start < chart.min_data_points) {
+                start = end - chart.min_data_points;
                 start = Math.max(0, start);
             }
         }
-        if (chart.max_fov) {
-            if (end - start > chart.max_fov) {
-                end = start + chart.max_fov;
-                end = Math.min(chart.data_length, end);
+        if (chart.max_data_points) {
+            if (end - start > chart.max_data_points) {
+                end = start + chart.max_data_points;
+                end = Math.min(chart.max_data_length, end);
             }
         }
 
-        return [start, end];
+        return dataset.data.slice(...[start, end]);
     }
 
 
