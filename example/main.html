@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
     <script src="../src/handler.js"></script>
     <script src="sample_chart_configs.js"></script>
+    <script src="utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Document</title>
 </head>
@@ -13,7 +15,7 @@
         <h1>Dynamic Chart Plugin</h1>
     </header>
     <div class="container">
-        <!-- Chart Area -->
+       
         <div class="chart-section" id="chart-area">
             <div class="chart-container big" id="chart1-div">
                 <canvas id="chart1"></canvas>
@@ -22,7 +24,9 @@
                 <canvas id="chart2"></canvas>
             </div>
         </div>
-        <!-- Options Area -->
+       
+
+
         <div class="options-section">
             <h2>Handler Options</h2>
             <div class="options-form">
@@ -237,200 +241,21 @@
         </div>
     </div>
 
-
-    <style>
-        /* General Styles */
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            background-color: #f9f9f9;
-        }
-
-        .h-centered {
-            width:100%;
-            display: flex;
-            justify-content: center;
-        }
-
-        header {
-            background-color: #46cb41;
-            color: white;
-            height: 5vh;
-            text-align: center;
-        }
-
-        .space-below {
-            margin: 2rem
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            padding: 1vw;
-            height: 85vh;
-        }
-
-        .table-sect {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 1vw;
-        }
-
-        .chart-section {
-            width:50vw;
-            height:100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .options-section {
-            width:35vw;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            max-height: 100%;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .options-section h2 {
-            margin-top: 0;
-        }
-
-        .options-form label {
-            display: block;
-            margin-top: 0.5rem;
-        }
-
-        .options-form input, .options-form select, .options-form button {
-            width: 100%;
-            margin-top: 0.5rem;
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .options-form button {
-            background-color: #46cb41;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 1rem;
-        }
-
-        .options-form button:hover {
-            background-color: #45a049;
-        }
-
-        .chart-container {
-            background-color: #0E131F;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .chart-container.big {
-            height: 50vh;
-        }
-
-        .chart-container.small {
-            height: 35vh;
-        }
-
-        .build-box {
-            background-color: #eee;
-            padding: 0.5rem;
-            border-radius: 4px;
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
-
-        .table-sect {
-            font-family: Arial, sans-serif;
-            margin: 20px auto;
-            width: 90%;
-        }
-        .table-sect h2 {
-            text-align: center;
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
-        .table-sect .h-centered {
-            display: flex;
-            justify-content: center;
-        }
-        .table-sect table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .table-sect table, .table-sect th, .table-sect td {
-            border: 1px solid #ccc;
-        }
-        .table-sect th, .table-sect td {
-            padding: 10px;
-            text-align: left;
-        }
-        .table-sect th {
-            background-color: #f4f4f4;
-            font-weight: bold;
-        }
-    </style>
-
-    <script>
-          function generateRandomData(length, initialValue = 100, volatility = 10, trend = 0.1, randomTrendVolatility = 0.05) {
-            const data = [];
-            let currentValue = initialValue;
-          
-            for (let i = 0; i < length; i++) {
-              const randomChange = Math.random() * volatility * 2 - volatility;
-              const trendChange = trend + (Math.random() * randomTrendVolatility * 2 - randomTrendVolatility);
-              currentValue += randomChange + trendChange;
-              data.push({ x: `${i}`, y: currentValue });
-            }
-          
-            return data;
-          }
-
-
-          function create_line_dataset(label, data, color) {
-            return {
-                label: label,
-                data: data,
-                backgroundColor: color,
-                type: 'line',
-                borderColor: color,
-                borderWidth: 2,
-                pointRadius: 0,
-                tension: 0.05
-            }
-          }
-
-          function create_bar_dataset(label, data, color) {
-            return {
-                label: label,
-                data: data,
-                backgroundColor: color,
-                borderWidth: 1,
-                barThickness: 'flex', 
-                categoryPercentage: 1.0,
-                barPercentage: 0.9,
-            }
-          }
-    </script>
-
     <script>
         const bounding_area = document.getElementById("chart-area");
+        const handler_type_select = document.getElementById('handlerType');
+        const start_from_select = document.getElementById('start_from');
+        const can_pan_select = document.getElementById('can_pan');
+        const can_zoom_select = document.getElementById('can_zoom');
+        const initial_fov_input = document.getElementById('initial_fov');
+        const min_fov_input = document.getElementById('min_fov');
+        const max_fov_input = document.getElementById('max_fov');
+        const pan_speed_multiplier_input = document.getElementById('pan_speed_multiplier');
+        const zoom_factor_input = document.getElementById('zoom_factor');
+        const fps_input = document.getElementById('fps');
+        const applyOptionsButton = document.getElementById('applyOptions');
+        const currentBuild = document.getElementById('current-build');
+
         const randomNumbers1 = generateRandomData(1000);
         const randomNumbers2 = generateRandomData(1000);
         const randomNumbers3 = generateRandomData(100);
@@ -456,18 +281,7 @@
             'min_data_points': 20
           });
 
-        const handler_type_select = document.getElementById('handlerType');
-        const start_from_select = document.getElementById('start_from');
-        const can_pan_select = document.getElementById('can_pan');
-        const can_zoom_select = document.getElementById('can_zoom');
-        const initial_fov_input = document.getElementById('initial_fov');
-        const min_fov_input = document.getElementById('min_fov');
-        const max_fov_input = document.getElementById('max_fov');
-        const pan_speed_multiplier_input = document.getElementById('pan_speed_multiplier');
-        const zoom_factor_input = document.getElementById('zoom_factor');
-        const fps_input = document.getElementById('fps');
-        const applyOptionsButton = document.getElementById('applyOptions');
-        const currentBuild = document.getElementById('current-build');
+    
             
         const multichart_config={
             charts: [chart1, chart2],
@@ -490,75 +304,7 @@
         let chart1_handler;
         let chart2_handler;
 
-        function buildInnerText(name, chart, bounding_area, options=null) {
-            if (options) {
-                return `
-                            ${name} = new DynamicChartHandler({
-                                ${chart},
-                                bounding_area: document.getElementById('${bounding_area}')
-                            }, {
-                                start_from: '${options.start_from}',
-                                can_pan: ${options.can_pan},
-                                can_zoom: ${options.can_zoom},
-                                initial_fov: ${options.initial_fov},
-                                min_fov: ${options.min_fov},
-                                max_fov: ${options.max_fov},
-                                pan_speed_multiplier: ${options.pan_speed_multiplier},
-                                zoom_factor: ${options.zoom_factor},
-                                fps: ${options.fps}
-                            });
-                        `;
-            } else {
-                return `
-                            ${name} = new DynamicChartHandler({
-                                ${chart},
-                                bounding_area: document.getElementById('${bounding_area}')
-                            });
-                        `;
-            }
-        }
-
-        applyOptionsButton.addEventListener('click', () => {
-            const options = {
-                start_from: start_from_select.value,
-                can_pan: can_pan_select.value === 'true',
-                can_zoom: can_zoom_select.value === 'true',
-                initial_fov: parseInt(initial_fov_input.value),
-                min_fov: parseInt(min_fov_input.value),
-                max_fov: parseInt(max_fov_input.value),
-                pan_speed_multiplier: parseFloat(pan_speed_multiplier_input.value),
-                zoom_factor: parseFloat(zoom_factor_input.value),
-                fps: parseInt(fps_input.value)
-            };
-
-            
-            if (handler_type_select.value === 'singlechart') {
-                if (chart_handler){
-                    chart_handler.destroy();
-                    chart_handler = null;
-                }
-                if (!chart1_handler) {
-                    chart1_handler = new DynamicChartHandler(chart1_config, options); 
-                    chart2_handler = new DynamicChartHandler(chart2_config, options); 
-                } else {
-                    chart1_handler.update_options(options); 
-                    chart2_handler.update_options(options); 
-                }
-                currentBuild.innerText = `${buildInnerText('chart1_handler', 'chart: chart1', 'document.getElementById("chart1-div")', options)}
-                                            ${buildInnerText('chart2_handler', 'chart: chart2', 'document.getElementById("chart2-div")', options)}`
-            } else {
-                if (chart1_handler) {
-                    chart1_handler.destroy(); 
-                    chart2_handler.destroy(); 
-                }
-                if (!chart_handler) {
-                    chart_handler = new DynamicChartHandler(multichart_config, options); 
-                } else {
-                    chart_handler.update_options(options);
-                }
-                currentBuild.innerText = buildInnerText('chart_handler', 'charts: charts', 'document.getElementById("chart_area")', options)
-            }
-        });
+        applyOptionsButton.addEventListener('click', () => edit_options());
     </script>
 </body>
 </html>
